@@ -63,8 +63,8 @@ type Participant = {
   name: string;
 };
 
-const SOCKET_URL =
-  import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
+// Use the same domain for frontend and backend.
+const SOCKET_URL = window.location.origin;
 
 export default function App() {
   const [token, setToken] = useState(
@@ -159,8 +159,13 @@ export default function App() {
     setError("");
 
     const s = io(SOCKET_URL, {
+      path: "/api/socket.io",
       auth: { token },
-      transports: ["websocket", "polling"]
+      transports: ["websocket"],
+      reconnection: true,
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000
     });
 
     s.on("connect", () => {

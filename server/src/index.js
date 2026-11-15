@@ -20,6 +20,8 @@ const app = express();
 const server = http.createServer(app);
 
 const io = new Server(server, {
+  path: "/api/socket.io",
+  transports: ["websocket"],
   cors: {
     origin: config.clientUrl,
     methods: ["GET", "POST"]
@@ -196,9 +198,15 @@ app.use((err, _req, res, _next) => {
   });
 });
 
-// Start database and API.
+// Connect to MongoDB.
 await mongoose.connect(config.mongoUri);
 
-server.listen(config.port, () => {
-  console.log(`IntellMeet API listening on ${config.port}`);
-});
+// Export the HTTP server for deployment.
+export default server;
+
+// Start the server only when running locally.
+if (process.env.VERCEL !== "1") {
+  server.listen(config.port, () => {
+    console.log(`IntellMeet API listening on ${config.port}`);
+  });
+}
